@@ -1,25 +1,19 @@
 # Python Packages
-
 import datetime as dt
 
-# PyPi Packages
-
-import yfinance as yf
-
+# Pypi Packages
 import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
 
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 
 from mplfinance.original_flavor import candlestick_ohlc
+import yfinance as yf
 
-# Code Starts Below
-
-matplotlib.use('TkAgg')  # This uses Tkinter to display graphs
+# code Starts below
 
 yf.pdr_override()  # activate yahoo finance workaround
 
@@ -30,17 +24,11 @@ start = dt.datetime(2020, 1, 1) - dt.timedelta(days=max(smasUsed))
 now = dt.datetime.now()  # Sets end point of dataframe
 stock = input("Enter the stock symbol : ")  # Asks for stock ticker
 
-
-def getData(stock, start, now):
-    # Fetches stock price data, saves as data frame
-    data = pdr.get_data_yahoo(stock, start, now)
-    return data
-
-
 # Runs this loop until user enters 'quit' (can do many stocks in a row)
 while stock != "quit":
 
-    prices = getData(stock, start, now)
+    # Fetches stock price data, saves as data frame
+    prices = pdr.get_data_yahoo(stock, start, now)
 
     fig, ax1 = plt.subplots()  # Create Plots
 
@@ -50,19 +38,14 @@ while stock != "quit":
         sma = x
         # calcaulates sma and creates col
         prices['SMA_' + str(sma)] = prices.iloc[:, 4].rolling(window=sma).mean()
-        print(prices)
 
     # calculate Bollinger Bands
     BBperiod = 15  # choose moving avera
-    stdev = 2
-    # calculates sma and creates a column in the dataframe
-    prices['SMA' + str(BBperiod)] = prices.iloc[:, 4].rolling(window=BBperiod).mean()
-    # calculates standard deviation and creates col
-    prices['STDEV'] = prices.iloc[:, 4].rolling(window=BBperiod).std()
-    # calculates lower bollinger band
-    prices['LowerBand'] = prices['SMA' + str(BBperiod)] - (stdev * prices['STDEV'])
-    prices['UpperBand'] = prices['SMA' + str(BBperiod)] + (stdev * prices['STDEV'])  # calculates upper band
-    # creates a date column stored in number format (for OHCL bars)
+    stdev = 2  # calculates sma and creates a column in the dataframe
+    prices['SMA' + str(BBperiod)] = prices.iloc[:, 4].rolling(window=BBperiod).mean()  # calculates standard deviation and creates col
+    prices['STDEV'] = prices.iloc[:, 4].rolling(window=BBperiod).std()  # calculates lower bollinger band
+    prices['LowerBand'] = prices['SMA' + str(BBperiod)] - (stdev * prices['STDEV'])  # calculates upper band
+    prices['UpperBand'] = prices['SMA' + str(BBperiod)] + (stdev * prices['STDEV'])  # creates a date column stored in number format (for OHCL bars)
     prices["Date"] = mdates.date2num(prices.index)
 
     # Calculate 10.4.4 stochastic
@@ -92,10 +75,10 @@ while stock != "quit":
 
     # Go through price history to create candlestics and GD+Blue dots
     for i in prices.index:
+        # append OHLC prices to make the candlestick
         append_me = prices["Date"][i], prices["Open"][i], prices["High"][
             i], prices["Low"][i], prices["Adj Close"][i], prices["Volume"][i]
         ohlc.append(append_me)
-        # append OHLC prices to make the candlestick
 
         # Check for Green Dot
         if prices['K'][i] > prices['D'][i] and lastK < lastD and lastK < 60:
@@ -104,82 +87,90 @@ while stock != "quit":
             # plt.bar(prices["Date"][i],1,1.1,bottom=prices["High"][i]*1.01,color='g')
             plt.plot(prices["Date"][i], prices["High"][i] + 1, marker="o", ms=4, ls="", color='g')  # plot green dot
 
-        greenDotDate.append(i)  # store green dot date
-        greenDot.append(prices["High"][i])  # store green dot value
+            greenDotDate.append(i)  # store green dot date
+            greenDot.append(prices["High"][i])  # store green dot value
 
         # Check for Lower Bollinger Band Bounce
-      if ((lastLow<lastLowBB) or (prices['Low'][i]<prices['LowerBand'][i])) and (prices['Adj Close'][i]>lastClose and prices['Adj Close'][i]>prices['LowerBand'][i]) and lastK <60:  
-        plt.plot(prices["Date"][i],prices["Low"][i]-1, marker="o", ms=4, ls="", color='b') #plot blue dot
-  
-      # store values
-      lastK=prices['K'][i]
-      lastD=prices['D'][i]
-      lastLow=prices['Low'][i]
-      lastClose=prices['Adj Close'][i]
-      lastLowBB=prices['LowerBand'][i]
+        if ((lastLow < lastLowBB) or (prices['Low'][i] < prices['LowerBand'][i])) and (prices['Adj Close'][i] > lastClose and prices['Adj Close'][i] > prices['LowerBand'][i]) and lastK < 60:
+            plt.plot(prices["Date"][i], prices["Low"][i] - 1, marker="o", ms=4, ls="", color='b')  # plot blue dot
 
-    
+        # store values
+        lastK = prices['K'][i]
+        lastD = prices['D'][i]
+        lastLow = prices['Low'][i]
+        lastClose = prices['Adj Close'][i]
+        lastLowBB = prices['LowerBand'][i]
+
     # Plot moving averages and BBands
-    for x in smasUsed: #This for loop calculates the EMAs for te stated periods and appends to dataframe
-      sma=x
-      prices['SMA_'+str(sma)].plot(label='close') 
-    prices['UpperBand'].plot(label='close',color='lightgray') 
-    prices['LowerBand'].plot(label='close', color='lightgray') 
+    for x in smasUsed:  # This for loop calculates the EMAs for the stated periods and appends to dataframe
+        sma = x
+        prices['SMA_' + str(sma)].plot(label='close')
+    prices['UpperBand'].plot(label='close', color='lightgray')
+    prices['LowerBand'].plot(label='close', color='lightgray')
 
     # plot candlesticks
-    candlestick_ohlc(ax1, ohlc, width=.5, colorup='k', colordown='r', alpha=0.75)
+    candlestick_ohlc(ax1, ohlc, width=.5, colorup='k',
+                     colordown='r', alpha=0.75)
 
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d')) #change x axis back to datestamps
-    ax1.xaxis.set_major_locator(mticker.MaxNLocator(8)) #add more x axis labels
-    plt.tick_params(axis='x', rotation=45) #rotate dates for readability
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter(
+        '%Y-%m-%d'))  # change x axis back to datestamps
+    ax1.xaxis.set_major_locator(
+        mticker.MaxNLocator(8))  # add more x axis labels
+    plt.tick_params(axis='x', rotation=45)  # rotate dates for readability
 
     # Pivot Points
-    pivots=[] #Stores pivot values
-    dates=[]  #Stores Dates corresponding to those pivot values
-    counter=0 #Will keep track of whether a certain value is a pivot
-    lastPivot=0 #Will store the last Pivot value
+    pivots = []  # Stores pivot values
+    dates = []  # Stores Dates corresponding to those pivot values
+    counter = 0  # Will keep track of whether a certain value is a pivot
+    lastPivot = 0  # Will store the last Pivot value
 
-    Range=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #Array used to iterate through stock prices
-    dateRange=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #Array used to iterate through corresponding dates
-    for i in prices.index: #Iterates through the price history
-      currentMax=max(Range, default=0) #Determines the maximum value of the 10 item array, identifying a potential pivot
-      value=round(prices["High"][i],2) #Receives next high value from the dataframe
+    # Array used to iterate through stock prices
+    Range = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # Array used to iterate through corresponding dates
+    dateRange = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for i in prices.index:  # Iterates through the price history
+        # Determines the maximum value of the 10 item array, identifying a potential pivot
+        currentMax = max(Range, default=0)
+        # Receives next high value from the dataframe
+        value = round(prices["High"][i], 2)
 
-      Range=Range[1:9] # Cuts Range array to only the most recent 9 values
-      Range.append(value) #Adds newest high value to the array
-      dateRange=dateRange[1:9]  #Cuts Date array to only the most recent 9 values
-      dateRange.append(i) #Adds newest date to the array
+        Range = Range[1:9]  # Cuts Range array to only the most recent 9 values
+        Range.append(value)  # Adds newest high value to the array
+        # Cuts Date array to only the most recent 9 values
+        dateRange = dateRange[1:9]
+        dateRange.append(i)  # Adds newest date to the array
 
-      if currentMax == max(Range, default=0): #If statement that checks is the max stays the same
-        counter+=1 #if yes add 1 to counter
-      else:
-        counter=0 #Otherwise new potential pivot so reset the counter
-      if counter==5: # checks if we have identified a pivot
-        lastPivot=currentMax #assigns last pivot to the current max value
-        dateloc=Range.index(lastPivot) #finds index of the Range array that is that pivot value
-        lastDate=dateRange[dateloc] #Gets date corresponding to that index
-        pivots.append(currentMax) #Adds pivot to pivot array
-        dates.append(lastDate) #Adds pivot date to date array
+        # If statement that checks is the max stays the same
+        if currentMax == max(Range, default=0):
+            counter += 1  # if yes add 1 to counter
+        else:
+            counter = 0  # Otherwise new potential pivot so reset the counter
+        if counter == 5:  # checks if we have identified a pivot
+            lastPivot = currentMax  # assigns last pivot to the current max value
+            # finds index of the Range array that is that pivot value
+            dateloc = Range.index(lastPivot)
+            # Gets date corresponding to that index
+            lastDate = dateRange[dateloc]
+            pivots.append(currentMax)  # Adds pivot to pivot array
+            dates.append(lastDate)  # Adds pivot date to date array
     print()
 
-    timeD=dt.timedelta(days=30) #Sets length of dotted line on chart
+    timeD = dt.timedelta(days=30)  # Sets length of dotted line on chart
 
-    for index in range(len(pivots)) : #Iterates through pivot array
+    for index in range(len(pivots)):  # Iterates through pivot array
 
-      # print(str(pivots[index])+": "+str(dates[index])) #Prints Pivot, Date couple
-      plt.plot_date([dates[index]-(timeD*.075), dates[index]+timeD], #Plots horizontal line at pivot value
-                  [pivots[index], pivots[index]], linestyle="--", linewidth=1, marker=',')
-      plt.annotate(str(pivots[index]), (mdates.date2num(dates[index]), pivots[index]), xytext=(-10, 7), 
-              textcoords='offset points',fontsize=7, arrowprops=dict(arrowstyle='-|>'))
+        # print(str(pivots[index])+": "+str(dates[index])) #Prints Pivot, Date couple
+        plt.plot_date([dates[index] - (timeD * .075), dates[index] + timeD],  # Plots horizontal line at pivot value
+                      [pivots[index], pivots[index]], linestyle="--", linewidth=1, marker=',')
+        plt.annotate(str(pivots[index]), (mdates.date2num(dates[index]), pivots[index]), xytext=(-10, 7),
+                     textcoords='offset points', fontsize=7, arrowprops=dict(arrowstyle='-|>'))
 
-    plt.xlabel('Date') #set x axis label
-    plt.ylabel('Price') #set y axis label
-    plt.title(stock+" - Daily") #set title
-    plt.ylim(prices["Low"].min(), prices["High"].max()*1.05) #add margins
+    plt.xlabel('Date')  # set x axis label
+    plt.ylabel('Price')  # set y axis label
+    plt.title(stock + " - Daily")  # set title
+    plt.ylim(prices["Low"].min(), prices["High"].max() * 1.05)  # add margins
     # plt.yscale("log")
 
-
-if __name__ == '__main__':
-  plt.show()
-  # print()
-  stock = input("Enter the stock symbol : ") #Asks for new stock
+    plt.show()
+    # print()
+    stock = input("Enter the stock symbol : ")  # Asks for new stock
