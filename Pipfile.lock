@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e3b006a973f85f255e486ad3cf9a85046e9f59efd98fa8069863720c95611ad3"
+            "sha256": "e3687f41b1175e1a2678dd2c2ac446b3df831f9c4bdb918999e1a59022f14a1c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -160,11 +160,11 @@
         },
         "mplfinance": {
             "hashes": [
-                "sha256:02addac1475e2ddaa7227d32edd00defaa515afd012f1ddbee3c36eaa9fc80fd",
-                "sha256:fc22c28ac7ae9094d8d5e82f935ac48cbc3408ece85f55e51448c31f5843be7b"
+                "sha256:36804e76c0df86d66187184845debaf7bd0afe4599c1aa9a8e3f33161797e7fb",
+                "sha256:883d91fca89ea471f609695a474863c53e36b0d2367a1e536738a847f7e8a0e5"
             ],
             "index": "pypi",
-            "version": "==0.12.7a4"
+            "version": "==0.12.7a5"
         },
         "multitasking": {
             "hashes": [

@@ -17,36 +17,53 @@ import yfinance as yf
 
 yf.pdr_override()  # activate yahoo finance workaround
 
-smasUsed = [10, 30, 50]  # Choose smas
-
-# Sets start point of dataframe
-start = dt.datetime(2020, 1, 1) - dt.timedelta(days=max(smasUsed))
-now = dt.datetime.now()  # Sets end point of dataframe
 stock = input("Enter the stock symbol : ")  # Asks for stock ticker
+
+
+def smasUsed():
+    # Choose smas
+    return [10, 30, 50]
+
+
+def dataframeStart():
+    # Sets start point of dataframe
+    smas = smasUsed()
+    start = dt.datetime(2020, 1, 1) - dt.timedelta(days=max(smas))
+    return start
+
+
+def getData():
+    now = dt.datetime.now()
+    start = dataframeStart()
+    data = pdr.get_data_yahoo(stock, start, now)
+    return data
+
 
 # Runs this loop until user enters 'quit' (can do many stocks in a row)
 while stock != "quit":
 
+    smasUsed = smasUsed()
+
     # Fetches stock price data, saves as data frame
-    prices = pdr.get_data_yahoo(stock, start, now)
+    prices = getData()
 
     fig, ax1 = plt.subplots()  # Create Plots
 
     # Calculate moving averages
 
-    for x in smasUsed:  # This for loop calculates the SMAs for the stated periods and appends to dataframe
-        sma = x
+    for x in smasUsed:
+        # This for loop calculates the SMAs for the stated periods and appends to dataframe
         # calcaulates sma and creates col
-        prices['SMA_' + str(sma)] = prices.iloc[:, 4].rolling(window=sma).mean()
+        prices['SMA_' + str(x)] = prices.iloc[:, 4].rolling(window=x).mean()
+        print(x)
 
-    # calculate Bollinger Bands
-    BBperiod = 15  # choose moving avera
-    stdev = 2  # calculates sma and creates a column in the dataframe
-    prices['SMA' + str(BBperiod)] = prices.iloc[:, 4].rolling(window=BBperiod).mean()  # calculates standard deviation and creates col
-    prices['STDEV'] = prices.iloc[:, 4].rolling(window=BBperiod).std()  # calculates lower bollinger band
-    prices['LowerBand'] = prices['SMA' + str(BBperiod)] - (stdev * prices['STDEV'])  # calculates upper band
-    prices['UpperBand'] = prices['SMA' + str(BBperiod)] + (stdev * prices['STDEV'])  # creates a date column stored in number format (for OHCL bars)
-    prices["Date"] = mdates.date2num(prices.index)
+    BBperiod = 15  # calculate Bollinger Bands
+    stdev = 2  # choose moving averave
+    prices['SMA' + str(BBperiod)] = prices.iloc[:, 4].rolling(window=BBperiod).mean()  # calculates sma and creates a column in the dataframe
+    prices['STDEV'] = prices.iloc[:, 4].rolling(window=BBperiod).std()  # calculates standard deviation and creates col
+    prices['LowerBand'] = prices['SMA' + str(BBperiod)] - (stdev * prices['STDEV'])  # calculates lower bollinger band
+    prices['UpperBand'] = prices['SMA' + str(BBperiod)] + (stdev * prices['STDEV'])  # calculates upper band
+    prices["Date"] = mdates.date2num(prices.index)    # creates a date column stored in number format (for OHCL bars)
 
     # Calculate 10.4.4 stochastic
     Period = 10  # Choose stoch period
@@ -85,14 +102,16 @@ while stock != "quit":
 
             # plt.Circle((prices["Date"][i],prices["High"][i]),1)
             # plt.bar(prices["Date"][i],1,1.1,bottom=prices["High"][i]*1.01,color='g')
-            plt.plot(prices["Date"][i], prices["High"][i] + 1, marker="o", ms=4, ls="", color='g')  # plot green dot
+            plt.plot(prices["Date"][i], prices["High"][i] + 1,
+                     marker="o", ms=4, ls="", color='g')  # plot green dot
 
             greenDotDate.append(i)  # store green dot date
             greenDot.append(prices["High"][i])  # store green dot value
 
         # Check for Lower Bollinger Band Bounce
         if ((lastLow < lastLowBB) or (prices['Low'][i] < prices['LowerBand'][i])) and (prices['Adj Close'][i] > lastClose and prices['Adj Close'][i] > prices['LowerBand'][i]) and lastK < 60:
-            plt.plot(prices["Date"][i], prices["Low"][i] - 1, marker="o", ms=4, ls="", color='b')  # plot blue dot
+            plt.plot(prices["Date"][i], prices["Low"][i] - 1,
+                     marker="o", ms=4, ls="", color='b')  # plot blue dot
 
         # store values
         lastK = prices['K'][i]
@@ -171,6 +190,8 @@ while stock != "quit":
     plt.ylim(prices["Low"].min(), prices["High"].max() * 1.05)  # add margins
     # plt.yscale("log")
 
+
+while __name__ == '__main__':
     plt.show()
     # print()
     stock = input("Enter the stock symbol : ")  # Asks for new stock

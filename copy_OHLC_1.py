@@ -20,10 +20,10 @@ yf.pdr_override()  # activate yahoo finance workaround
 smasUsed = [10, 30, 50]  # Choose smas
 
 start = dt.datetime(2020, 1, 1) - dt.timedelta(days=max(smasUsed))  # Sets start point of dataframe
-now = dt.datetime.now() #Sets end point of dataframe
-stock = input("Enter the stock symbol : ") #Asks for stock ticker
+now = dt.datetime.now()  #Sets end point of dataframe
+stock = input("Enter the stock symbol : ")  #Asks for stock ticker
 
-while stock != "quit": #Runs this loop until user enters 'quit' (can do many stocks in a row)
+while stock != "quit":  #Runs this loop until user enters 'quit' (can do many stocks in a row)
 
   prices = pdr.get_data_yahoo(stock, start, now) #Fetches stock price data, saves as data frame
 
