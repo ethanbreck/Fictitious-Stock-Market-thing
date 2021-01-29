@@ -20,15 +20,12 @@ yf.pdr_override()  # activate yahoo finance workaround
 stock = input("Enter the stock symbol : ")  # Asks for stock ticker
 
 
-def smasUsed():
-    # Choose smas
-    return [10, 30, 50]
+smasUsed = [10, 30, 50]
 
 
 def dataframeStart():
     # Sets start point of dataframe
-    smas = smasUsed()
-    start = dt.datetime(2020, 1, 1) - dt.timedelta(days=max(smas))
+    start = dt.datetime(2020, 1, 1) - dt.timedelta(days=max(smasUsed))
     return start
 
 
@@ -41,8 +38,6 @@ def getData():
 
 # Runs this loop until user enters 'quit' (can do many stocks in a row)
 while stock != "quit":
-
-    smasUsed = smasUsed()
 
     # Fetches stock price data, saves as data frame
     prices = getData()
@@ -79,9 +74,13 @@ while stock != "quit":
     prices["GD"] = prices["High"]  # Create GD column to store green dots
     ohlc = []  # Create OHLC array which will store price data for the candlestick chart
 
+# everything up to here has been completed
+
     # Delete extra dates
     prices = prices.iloc[max(smasUsed):]
 
+    print(prices)
+    
     greenDotDate = []  # Stores dates of Green Dots
     greenDot = []  # Stores Values of Green Dots
     lastK = 0  # Will store yesterday's fast stoch
