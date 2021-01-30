@@ -1,5 +1,6 @@
 # Python Packages
 import datetime as dt
+import os
 
 # Pypi Packages
 import numpy as np
@@ -19,6 +20,7 @@ yf.pdr_override()  # activate yahoo finance workaround
 
 stock = input("Enter the stock symbol : ")  # Asks for stock ticker
 
+app_dir = os.path.abspath(os.path.dirname(__file__))
 
 smasUsed = [10, 30, 50]
 
@@ -76,11 +78,18 @@ while stock != "quit":
 
 # everything up to here has been completed
 
+    ohlcFIle2 = os.path.join(app_dir, "data/ohlc_data.csv")
+
+    with open(ohlcFIle2, mode="w") as ohlcCSV2:
+        prices.to_csv(ohlcCSV2)
+
     # Delete extra dates
     prices = prices.iloc[max(smasUsed):]
+    ohlcFIle = os.path.join(app_dir, "data/ohlc2_data.csv")
 
-    print(prices)
-    
+    with open(ohlcFIle, mode="w") as ohlcCSV:
+        prices.to_csv(ohlcCSV)
+
     greenDotDate = []  # Stores dates of Green Dots
     greenDot = []  # Stores Values of Green Dots
     lastK = 0  # Will store yesterday's fast stoch
